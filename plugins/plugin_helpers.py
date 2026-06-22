@@ -6,6 +6,7 @@ Shared utility functions that can be used by any plugin.
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -125,6 +126,7 @@ def run_prettier(filepath: Path) -> bool:
             text=True,
             check=True,
             timeout=SUBPROCESS_TIMEOUT,
+            shell=(os.name == "nt"),  # Windows needs a shell to resolve npx.cmd
         )
         return True
     except FileNotFoundError:
@@ -228,6 +230,7 @@ def run_prettier_parallel(
                 text=True,
                 check=True,
                 timeout=SUBPROCESS_TIMEOUT,
+                shell=(os.name == "nt"),  # Windows needs a shell to resolve npx.cmd
             )
             return True
         except Exception as e:
@@ -259,6 +262,7 @@ def run_prettier_parallel(
                 text=True,
                 check=True,
                 timeout=SUBPROCESS_TIMEOUT,
+                shell=(os.name == "nt"),  # Windows needs a shell to resolve npx.cmd
             )
             return True
         except Exception as e:
