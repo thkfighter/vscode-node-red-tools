@@ -6,6 +6,7 @@ Pre-explode plugin that normalizes random Node-RED IDs to functional names.
 
 from __future__ import annotations
 
+from platform import node
 import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple, Set
@@ -167,6 +168,30 @@ def update_wires(nodes: List[Dict[str, Any]], id_map: Dict[str, str]) -> None:
                 for i, wire_id in enumerate(wire_array):
                     if wire_id in id_map:
                         wire_array[i] = id_map[wire_id]
+
+        if "nodes" in node:
+            group_nodes = node["nodes"]
+            for i, node_id in enumerate(group_nodes):
+                if node_id in id_map:
+                    group_nodes[i] = id_map[node_id]
+
+        if "broker" in node and node["broker"] in id_map:
+            node["broker"] = id_map[node["broker"]]
+
+        if "ui" in node and node["ui"] in id_map:
+            node["ui"] = id_map[node["ui"]]
+
+        if "theme" in node and node["type"] == "ui-page" and node["theme"] in id_map:
+            node["theme"] = id_map[node["theme"]]
+
+        if "page" in node and node["page"] in id_map:
+            node["page"] = id_map[node["page"]]
+
+        if "group" in node and node["group"] in id_map:
+            node["group"] = id_map[node["group"]]
+
+        if "g" in node and node["g"] in id_map:
+            node["g"] = id_map[node["g"]]
 
         if "z" in node and node["z"] in id_map:
             node["z"] = id_map[node["z"]]
