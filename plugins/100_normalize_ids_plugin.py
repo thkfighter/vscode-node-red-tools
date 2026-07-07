@@ -6,7 +6,6 @@ Pre-explode plugin that normalizes random Node-RED IDs to functional names.
 
 from __future__ import annotations
 
-from platform import node
 import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple, Set
