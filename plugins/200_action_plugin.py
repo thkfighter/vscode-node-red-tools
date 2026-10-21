@@ -143,9 +143,10 @@ class ActionPlugin:
             return False
 
         func_code: str = node.get("func", "")
-        # During explode: check if func matches pattern
-        # During rebuild: empty func means check files in rebuild_node()
-        return parse_action_definition(func_code) is not None or func_code == ""
+        # Only used during explode (rebuild is file-driven). An empty func must
+        # not match: claiming it would also swallow initialize/finalize code
+        # without writing it anywhere.
+        return parse_action_definition(func_code) is not None
 
     def get_claimed_fields(self, node: Dict[str, Any]) -> List[str]:
         """Claim all fields this plugin generates during rebuild"""

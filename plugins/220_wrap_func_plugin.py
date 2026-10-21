@@ -39,8 +39,12 @@ class WrapFuncPlugin:
         return "explode"
 
     def can_handle_node(self, node: Dict[str, Any]) -> bool:
-        """Check if this node is a function node (not action/global function)"""
-        return node.get("type") == "function" and "func" in node and node["func"]
+        """Handle any function node not already claimed by action/global-function.
+
+        func may be empty while initialize/finalize still hold code (e.g. a node
+        that only seeds global context on deploy), so don't require func.
+        """
+        return node.get("type") == "function"
 
     def get_claimed_fields(self, node: Dict[str, Any]) -> List[str]:
         """Claim the func, initialize, and finalize fields"""
@@ -48,9 +52,10 @@ class WrapFuncPlugin:
 
     def can_infer_node_type(self, node_dir: Path, node_id: str) -> Optional[str]:
         """Infer node type from files, returns None if can't infer"""
-        # If there's a .wrapped.js file, it's a function node
-        if (node_dir / f"{node_id}.wrapped.js").exists():
-            return "function"
+        # .wrapped.js / .initialize.js / .finalize.js => function node
+        for suffix in (".wrapped.js", ".initialize.js", ".finalize.js"):
+            if (node_dir / f"{node_id}{suffix}").exists():
+                return "function"
         return None
 
     def explode_node(self, node: Dict[str, Any], node_dir: Path) -> List[str]:
