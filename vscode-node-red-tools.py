@@ -176,6 +176,12 @@ def main() -> int:
         action="store_true",
         help="Show what would change without writing files",
     )
+    rebuild_parser.add_argument(
+        "--sort-keys",
+        action="store_true",
+        help="Recursively sort JSON object keys in the output for a canonical, "
+        "diff-friendly flows.json (node array order is preserved)",
+    )
 
     # Verify command
     verify_parser = subparsers.add_parser(
@@ -396,6 +402,7 @@ def main() -> int:
                 delete_new=args.delete_new,
                 dry_run=args.dry_run,
                 plugins_dict=plugins_dict,
+                sort_keys=args.sort_keys,
             )
         elif args.command == "verify":
             return verify_flows(

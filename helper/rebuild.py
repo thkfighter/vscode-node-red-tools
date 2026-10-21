@@ -37,6 +37,21 @@ from .constants import (
 )
 
 
+def sort_keys_recursive(obj: Any) -> Any:
+    """Return a copy of obj with all dict keys sorted alphabetically (recursively).
+
+    Object (dict) keys are reordered; list/array order is left untouched, so
+    node array order in flows.json is preserved. Scalars are returned as-is.
+    Used by rebuild's --sort-keys option to produce a canonical, diff-friendly
+    key order without changing flow behavior (Node-RED ignores key order).
+    """
+    if isinstance(obj, dict):
+        return {k: sort_keys_recursive(obj[k]) for k in sorted(obj.keys())}
+    if isinstance(obj, list):
+        return [sort_keys_recursive(item) for item in obj]
+    return obj
+
+
 def rebuild_single_node(
     node_id: str,
     node_dir: Path,
@@ -352,6 +367,7 @@ def rebuild_flows(
     continued_from_explode: bool = False,
     dry_run: bool = False,
     plugins_dict: Optional[Dict[str, List[Any]]] = None,
+    sort_keys: bool = False,
 ) -> int:
     """Rebuild flows.json from source files
 
@@ -365,6 +381,9 @@ def rebuild_flows(
         continued_from_explode: Skip redundant pre-rebuild work
         dry_run: Show what would change without writing files
         plugins_dict: Pre-loaded plugins dictionary (required)
+        sort_keys: Recursively sort object keys in the output (node array
+            order is preserved). Opt-in; produces a canonical, diff-friendly
+            flows.json without affecting flow behavior.
 
     Returns:
         Exit code (SUCCESS = success, REBUILD_ERROR = error)
@@ -388,6 +407,7 @@ def rebuild_flows(
                 continued_from_explode=continued_from_explode,
                 dry_run=False,
                 plugins_dict=plugins_dict,
+                sort_keys=sort_keys,
             )
 
             # Compare flows.json files
@@ -468,6 +488,12 @@ def rebuild_flows(
                 quiet_plugins,
                 progress_task=(progress, task2),
             )
+
+        # Optionally sort object keys for a canonical, diff-friendly output.
+        # Node array order is preserved; only keys within objects are reordered.
+        if sort_keys:
+            log_info("Sorting object keys (node array order preserved)...")
+            rebuilt_nodes = sort_keys_recursive(rebuilt_nodes)
 
         # Write flows file - compact format
         flows_path.parent.mkdir(parents=True, exist_ok=True)
